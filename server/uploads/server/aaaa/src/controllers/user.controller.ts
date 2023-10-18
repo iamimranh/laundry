@@ -1,8 +1,12 @@
+import {
+  createSession,
+  getSession,
+  destroySession,
+} from "../jwtAuthentication";
 import bcrypt from "bcrypt";
-import { Request, Response } from "express";
-import { createSession, destroySession } from "../jwtAuthentication";
-import { UserModel } from "../models/user";
 const saltRounds = 10;
+import { Request, Response } from "express";
+import { UserModel } from "../models/user";
 
 const userExists = async (phone: string) => {
   const user = await UserModel.findOne({ phone });
@@ -21,7 +25,6 @@ const hashPassword = async (password: string) => {
 const checkCredential = async (phone: string, password: string) => {
   try {
     if (!userExists(phone)) return false;
-
     const user = await UserModel.findOne({ phone });
 
     return bcrypt
@@ -81,20 +84,16 @@ const login = async (req: Request, res: Response) => {
 
 const profile = async (req: Request, res: Response) => {
   try {
-    // console.log(req.user);
+    // req.headers.authorization.split(' ')[1];
+    const token = req.cookies.accessToken || req.get('Authorization');
+    const session = getSession(token);
 
-    // const token = req.headers.authorization.split(" ")[1];
-    // const token = req.cookies.accessToken || req.get("Authorization");
-    // const session = getSession(token);
-
-    // const userPhone = session.userPhone;
-    // const user = await UserModel.findOne({ phone: userPhone });
-
+    const userPhone = session.userPhone;
+    const user = await UserModel.findOne({ phone: userPhone });
     res.status(200).json({
-      //@ts-ignore
-      ...req.user,
-      password: undefined,
-    });
+      ...user.toObject(),
+      password: undefined
+    })
   } catch (error) {
     console.log(error);
     res.status(500).send("Profile Unavailable");
@@ -103,7 +102,7 @@ const profile = async (req: Request, res: Response) => {
 
 const logout = (req: Request, res: Response) => {
   try {
-    const token = req.headers.authorization.split(" ")[1];
+    const token = req.cookies.accessToken || req.get('Authorization');
     if (destroySession(token))
       return res.status(200).send("Successfully logged out!");
     res.status(500).send("ERROR while logging out !");
@@ -113,4 +112,4 @@ const logout = (req: Request, res: Response) => {
   }
 };
 
-export { create, login, logout, profile };
+export { create, login, profile, logout };

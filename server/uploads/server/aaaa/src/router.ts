@@ -11,7 +11,6 @@ import {
   getOrderByUser,
   updateOrderStatus,
   getOrders,
-  getOrderDetails,
 } from "./controllers";
 import { upload } from "./multer";
 
@@ -49,6 +48,5 @@ router.patch(
   ownerCheckMiddleware,
   updateOrderStatus
 );
-router.get("/get-order-details", getOrderDetails);
 
 export { router };

@@ -1,5 +1,6 @@
-import { Request, Response } from "express";
 import { OrderSchemaModel, OrderStatusEnum } from "../models";
+import { deleteStorageFiles } from "../common";
+import { Request, Response } from "express";
 const os = require("os");
 
 export const createOrder = async (req: any, res: Response) => {
@@ -7,7 +8,6 @@ export const createOrder = async (req: any, res: Response) => {
 
   body.user = user._id;
   body.status = OrderStatusEnum.PENDING;
-
   try {
     await OrderSchemaModel.create(body);
     res.status(201).send(true);
@@ -87,7 +87,7 @@ export const updateOrderStatus = async (req: Request, res: Response) => {
 
 export const getOrders = async (req: any, res: Response) => {
   const { status } = req.query;
-  // console.log("req", req.user);
+  console.log("req", req.user);
   try {
     let query = {};
     if (status) {
@@ -98,25 +98,6 @@ export const getOrders = async (req: any, res: Response) => {
     const orders = await OrderSchemaModel.find(query)
       .populate("serviceSubCategory")
       .populate("service")
-      .populate("user")
-      .exec();
-
-    res.status(200).json(orders);
-  } catch (error) {
-    console.log(error);
-    res.status(500).send("Failed to fetch order");
-  }
-};
-export const getOrderDetails = async (req: any, res: Response) => {
-  const { orderId } = req.query;
-
-  if (!orderId) {
-    res.status(400).send("userId is required");
-  }
-  try {
-    const orders = await OrderSchemaModel.find({ _id: orderId })
-      .populate("cart.serviceSubCategory")
-      .populate("cart.service")
       .populate("user")
       .exec();
 

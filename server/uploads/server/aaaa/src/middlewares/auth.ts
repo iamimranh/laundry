@@ -1,10 +1,9 @@
+const { getSession } = require("../jwtAuthentication");
 import { NextFunction, Response } from "express";
-import { getSession } from "../jwtAuthentication";
 import { UserModel } from "../models/user";
 const authMiddleware = async (req: any, res: Response, next: NextFunction) => {
   try {
     // const token = req.headers.authorization || req.get("Authorization");
-
     const token = req.headers.authorization.split(" ")[1];
     if (!token)
       return res.status(400).send("Unauthorised access! Token not Found!");
@@ -13,8 +12,7 @@ const authMiddleware = async (req: any, res: Response, next: NextFunction) => {
 
     if (existingSession) {
       const { userPhone } = existingSession;
-      const user = await UserModel.findOne({ phone: userPhone }).lean();
-
+      const user = await UserModel.findOne({ phone: userPhone });
       if (user) {
         req.user = user;
       }
